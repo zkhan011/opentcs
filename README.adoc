@@ -27,6 +27,9 @@ Depending on your needs, it might also be necessary to adapt algorithms or add p
 To get started with openTCS, please refer to the user's guide, the developer's guide and the API documentation.
 These documents are included in the binary distribution and can also be read online on the https://www.opentcs.org/[openTCS homepage].
 
+For the optional WGS84/OpenStreetMap fleet overview and its operational boundaries, see
+link:./docs/fleet-map.adoc[Geographic fleet map].
+
 == Licensing
 
 This work is licensed under multiple licences.

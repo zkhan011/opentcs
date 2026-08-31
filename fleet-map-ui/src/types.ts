@@ -1,0 +1,3 @@
+export type VehicleSnapshot={vehicleId:string;displayName:string;vehicleType:string|null;latitude:number;longitude:number;headingDegrees:number|null;speedKmh:number|null;gpsAccuracyMeters:number|null;operationalStatus:string;availability:string|null;matchedPoint:string|null;matchedPath:string|null;mapMatchConfidence:number|null;transportOrder:string|null;driveOrder:string|null;destination:string|null;fuelPercentage:number|null;maintenanceStatus:string|null;telemetryTimestamp:string;stale:boolean;connected:boolean};
+export type FeatureCollection=GeoJSON.FeatureCollection<GeoJSON.Geometry,GeoJSON.GeoJsonProperties>;
+export const emptyCollection:FeatureCollection={type:'FeatureCollection',features:[]};

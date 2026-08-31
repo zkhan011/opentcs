@@ -1,0 +1,79 @@
+// SPDX-FileCopyrightText: The openTCS Authors
+// SPDX-License-Identifier: CC-BY-4.0
+
+= Geographic fleet map
+
+== Architecture and operational boundary
+
+Telemetry adapters (TrackIT, MQTT, or RabbitMQ) validate a `GpsFix` and submit it to the
+`VehicleMapStateStore`. Physical WGS84 coordinates and the last successful logical openTCS match
+are retained separately. Duplicate and out-of-order fixes are ignored and a malformed fix never
+replaces the last valid position. The browser retrieves an initial snapshot and applies incremental
+SSE events to one MapLibre GeoJSON source.
+
+The map is a view of the openTCS plant graph. It is *not* a routing authority. Transport orders,
+drive orders, routing, scheduling, reservations, command sequencing, and completion acknowledgements
+remain owned by the openTCS 7.6.0 kernel. In particular, a GPS map match must never acknowledge a
+vehicle command.
+
+== Configuration
+
+Copy `fleet-map-ui/.env.example` to `fleet-map-ui/.env`. `OSM_ONLINE`, `OSM_OFFLINE`, and
+`CUSTOM_XYZ` are valid providers. Always retain the attribution required by the tile supplier;
+OpenStreetMap data requires `© OpenStreetMap contributors`. Do not bulk-download tiles from the
+public OSM tile service.
+
+For Jebel Ali, run an approved TileServer GL instance separately and configure, for example,
+`VITE_MAP_TILE_URL=http://localhost:8081/styles/jebel-ali/{z}/{x}/{y}.png`. In Docker use the
+browser-reachable URL (not necessarily the container DNS name). Keep MBTiles outside application
+JARs and frontend bundles. There is no implicit online fallback: changing providers is an explicit
+operator action, and tile failures are shown in the connection banner.
+
+Telemetry defaults are 30 seconds until stale and 120 seconds until offline. Geographic calibration
+must record the surveyed origin, EPSG:32640 (UTM zone 40N), plant X/Y offsets, scale, and rotation.
+Calibration must be surveyed and operationally validated before logical GPS matching is enabled.
+Plant object properties may carry `latitude`, `longitude`, `osmNodeId`, `osmWayId`, `zone`, and
+`laneId` metadata.
+
+== Telemetry contracts
+
+Adapters must provide a vehicle identifier, latitude, longitude, timestamp, and, when available,
+heading, speed, and accuracy. Latitude/longitude ranges, non-negative speed/accuracy, future clock
+skew, `0,0`, duplicates, and ordering are checked centrally. TrackIT/MQTT/RabbitMQ adapters must
+translate their vendor envelopes into this contract and quarantine rejected source messages with a
+correlation ID. Credentials and broker URLs belong in deployment secrets, never source control.
+
+The UI maps the existing openTCS states (`IDLE`, `EXECUTING`, `CHARGING`, `ERROR`, `UNKNOWN`) and
+deployment-specific operational states to the documented colors. Missing optional data is rendered
+as “Not available”.
+
+== Building and starting
+
+Backend (Linux/macOS): `./gradlew build`; tests only: `./gradlew test`; kernel:
+`./build/install/opentcs/bin/startKernel.sh`. On Windows use `gradlew.bat build` and the generated
+`startKernel.bat`. Java 21 is required.
+
+Frontend: `cd fleet-map-ui && npm ci && npm test && npm run build`; development server:
+`npm run dev -- --host 0.0.0.0`. Configure a reverse proxy so `/api` reaches the authenticated kernel
+map API. For containers, build the kernel and UI images and mount the external Jebel Ali MBTiles into
+TileServer GL; no Docker deployment is supplied by upstream openTCS in this repository.
+
+== Development scenario
+
+A development-only telemetry publisher should send normal adapter messages for `ITV-1001`
+(moving), `ITV-1002` (idle), and `ITV-1003` (then stop publishing until offline). Create parking and
+fueling locations plus the active order through the kernel API and display the route returned by the
+kernel. Never add timers or fabricated movement to production services.
+
+== Troubleshooting and readiness
+
+* Tile warning: check browser reachability, CORS, XYZ placeholders, attribution, and zoom coverage.
+* Reconnecting: check authentication cookies, reverse-proxy SSE buffering, and `/api/map/stream`.
+* No vehicle movement: inspect adapter quarantine logs and source timestamps; the store intentionally
+  rejects old fixes.
+* Misaligned graph: disable map matching and survey/calibrate EPSG:32640 parameters.
+* A map or telemetry outage must not terminate or mutate the kernel's routing/scheduling services.
+
+The state model and map renderer alone are not production readiness. Site calibration, ingestion
+adapter wiring, authenticated API wiring, projection/map-matching validation, 1,500-vehicle load
+tests, vehicle acknowledgement validation, and terminal operational acceptance remain mandatory.

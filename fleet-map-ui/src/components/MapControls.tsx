@@ -1,0 +1,1 @@
+export function MapControls({fit,follow,following}:{fit:()=>void;follow:()=>void;following:boolean}){return <div className="controls"><button onClick={fit}>Fit vehicles</button><button aria-pressed={following} onClick={follow}>{following?'Stop following':'Follow selected'}</button></div>}
