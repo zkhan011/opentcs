@@ -1,0 +1,2 @@
+export type MapProvider='OSM_ONLINE'|'OSM_OFFLINE'|'CUSTOM_XYZ';
+export const mapConfig={provider:(import.meta.env.VITE_MAP_PROVIDER??'OSM_ONLINE') as MapProvider,tileUrl:import.meta.env.VITE_MAP_TILE_URL??'https://tile.openstreetmap.org/{z}/{x}/{y}.png',attribution:import.meta.env.VITE_MAP_ATTRIBUTION??'© OpenStreetMap contributors',latitude:Number(import.meta.env.VITE_MAP_DEFAULT_LATITUDE??24.995),longitude:Number(import.meta.env.VITE_MAP_DEFAULT_LONGITUDE??55.040),zoom:Number(import.meta.env.VITE_MAP_DEFAULT_ZOOM??15)};

@@ -1,0 +1,1 @@
+import {STATUS_COLORS} from './VehicleMarker';export function MapLegend(){return <div className="legend" aria-label="Vehicle status legend">{Object.entries(STATUS_COLORS).map(([s,c])=><span key={s}><i style={{background:c}}/>{s}</span>)}</div>}

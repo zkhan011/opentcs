@@ -1,0 +1,1 @@
+export function ConnectionStatus({connected,lastUpdate,tileError}:{connected:boolean;lastUpdate:Date|null;tileError:boolean}){return <div className="connection" role="status"><b>{connected?'Live':'Reconnecting…'}</b>{lastUpdate&&` · ${lastUpdate.toLocaleTimeString()}`}{tileError&&<strong> · Map tiles unavailable</strong>}</div>}

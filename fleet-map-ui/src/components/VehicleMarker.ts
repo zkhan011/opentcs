@@ -1,0 +1,3 @@
+import type {VehicleSnapshot} from '../types';
+export const STATUS_COLORS:Record<string,string>={ACTIVE:'#16a34a',MOVING:'#16a34a',IDLE:'#2563eb',ASSIGNED:'#f59e0b',RESERVED:'#f59e0b',PARKING:'#06b6d4',FUELING:'#9333ea',CHARGING:'#7c3aed',MAINTENANCE:'#f97316',ERROR:'#dc2626',FAILED:'#dc2626',OFFLINE:'#6b7280',EMERGENCY:'#7f1d1d',UNKNOWN:'#64748b'};
+export function vehicleFeatures(vehicles:VehicleSnapshot[]):GeoJSON.FeatureCollection<GeoJSON.Point>{return {type:'FeatureCollection',features:vehicles.map(v=>({type:'Feature',id:v.vehicleId,geometry:{type:'Point',coordinates:[v.longitude,v.latitude]},properties:{...v,color:STATUS_COLORS[v.connected?v.operationalStatus:'OFFLINE']??STATUS_COLORS.UNKNOWN,heading:v.headingDegrees??0,stale:v.stale?1:0}}))};}
